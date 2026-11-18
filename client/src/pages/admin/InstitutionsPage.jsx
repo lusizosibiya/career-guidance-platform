@@ -175,8 +175,8 @@ export default function InstitutionsPage() {
               <p className="mb-2 text-sm">Points scale</p>
               <div className="space-y-2">
                 {form.aps_rules.scale.map((row, index) => (
-                  <div key={index} className="flex items-center gap-2 text-sm">
-                    <span className="w-16 text-gray-500">From</span>
+                  <div key={index} className="flex flex-wrap items-center gap-2 text-sm">
+                   <span className="text-gray-500">From</span>
                     <input
                       type="number"
                       min="0"
