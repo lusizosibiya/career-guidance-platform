@@ -9,7 +9,7 @@ const links = [
 export default function AdminLayout() {
   return (
     <div className="min-h-screen bg-gray-50 md:flex">
-      <aside className="border-b bg-white md:min-h-screen md:w-56 md:border-b-0 md:border-r">
+      <aside className="border-b border-gray-200 bg-white md:min-h-screen md:w-56 md:border-b-0 md:border-r">
         <div className="px-4 py-4 text-lg font-bold">Admin</div>
         <nav className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-col md:pb-0">
           {links.map((link) => (

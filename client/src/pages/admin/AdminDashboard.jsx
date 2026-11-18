@@ -16,7 +16,7 @@ export default function AdminDashboard() {
           <Link
             key={card.label}
             to={card.to}
-            className="rounded-lg border bg-white p-5 shadow-sm hover:shadow"
+            className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm hover:shadow"
           >
             <p className="text-sm text-gray-500">{card.label}</p>
             <p className="mt-1 text-3xl font-bold">{card.count}</p>
