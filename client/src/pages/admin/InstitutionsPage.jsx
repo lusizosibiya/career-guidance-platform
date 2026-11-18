@@ -92,7 +92,7 @@ export default function InstitutionsPage() {
   }
 
   function handleDelete(institution) {
-    if (window.confirm(`Delete ${institution.name}? Its courses will be deleted too.`)) {
+    if (window.confirm(`Delete ${institution.name}?`)) {
       setItems(items.filter((i) => i.id !== institution.id));
     }
   }
