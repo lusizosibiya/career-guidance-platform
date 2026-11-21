@@ -46,3 +46,144 @@ export const getCourseById = async (req, res) => {
     });
   }
 };
+
+const courseFields = [
+  "institution_id",
+  "name",
+  "fields",
+  "qualification_type",
+  "min_aps",
+  "duration",
+  "additional_requirements",
+  "application_url",
+  "source_url",
+  "admission_year",
+];
+
+function prepareCourse(body = {}) {
+  return Object.fromEntries(
+    courseFields
+      .filter((field) =>
+        Object.prototype.hasOwnProperty.call(body, field)
+      )
+      .map((field) => [field, body[field]])
+  );
+}
+
+function validCourse(course) {
+  return (
+    typeof course.institution_id === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(course.institution_id) &&
+    typeof course.name === "string" &&
+    course.name.trim().length > 0 &&
+    (course.fields === undefined ||
+      (Array.isArray(course.fields) &&
+        course.fields.every((f) => typeof f === "string"))) &&
+    (course.min_aps == null ||
+      (Number.isInteger(course.min_aps) &&
+        course.min_aps >= 0 &&
+        course.min_aps <= 100))
+  );
+}
+
+// POST /api/courses
+export const createCourse = async (req, res) => {
+  try {
+    const course = prepareCourse(req.body ?? {});
+
+    if (!validCourse(course)) {
+      return res.status(400).json({
+        message: "Invalid course data",
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("courses")
+      .insert(course)
+      .select()
+      .single();
+
+    if (error?.code === "23503") {
+      return res.status(400).json({
+        message: "Institution does not exist",
+      });
+    }
+
+    if (error) throw error;
+
+    res.status(201).json(data);
+  } catch (error) {
+    console.error("Create course failed:", error.message);
+    res.status(500).json({
+      message: "Failed to create course",
+    });
+  }
+};
+
+// PUT /api/courses/:id
+export const updateCourse = async (req, res) => {
+  try {
+    const course = prepareCourse(req.body ?? {});
+
+    if (!validCourse(course)) {
+      return res.status(400).json({
+        message: "Invalid course data",
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("courses")
+      .update(course)
+      .eq("id", req.params.id)
+      .select()
+      .maybeSingle();
+
+    if (error?.code === "23503") {
+      return res.status(400).json({
+        message: "Institution does not exist",
+      });
+    }
+
+    if (error) throw error;
+
+    if (!data) {
+      return res.status(404).json({
+        message: "Course not found",
+      });
+    }
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error("Update course failed:", error.message);
+    res.status(500).json({
+      message: "Failed to update course",
+    });
+  }
+};
+
+// DELETE /api/courses/:id
+export const deleteCourse = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("courses")
+      .delete()
+      .eq("id", req.params.id)
+      .select("id")
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      return res.status(404).json({
+        message: "Course not found",
+      });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("Delete course failed:", error.message);
+    res.status(500).json({
+      message: "Failed to delete course",
+    });
+  }
+};
