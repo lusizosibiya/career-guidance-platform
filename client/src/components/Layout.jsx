@@ -8,8 +8,9 @@ const LEARNER_LINKS =[
     { to: "/results", label: "My results"},
 ]; 
 const ADMIN_LINKS = [
+    { to: "/admin", label: "Dashboard"},
+    { to: "/admin/institutions", label: "Institutions"},
     { to: "/admin/courses", label: "Courses"},
-    { to: "/admin/careers", label: "Careers"},
 ];
 
 function Brand() {
@@ -72,7 +73,7 @@ export function AppLayout() {
                 <aside className="hidden md:block w-56 shrink-0 p-4 border-r border-[#D9DFE8]">
                     <nav className="space-y-1" aria-label="Main">
                         {links.map((l) => (
-                            <NavLink key={l.to} to={l.to}
+                            <NavLink key={l.to} to={l.to} end
                             className={({ isActive }) => `flex items-center min-h-11 px-3 rounded-lg font-semibold text-sm ${isActive ? "bg-[#14213D] text-white" : "hover:bg-white"}`}>
                                 {l.label}
                             </NavLink>
@@ -83,9 +84,9 @@ export function AppLayout() {
             </div>
 
             {/* Bottom menu: shown on phones, hidden from md up */}
-            <nav className="md:hidden fixed bottom-0 insert-x-0 bg-[#14213D] text-white flex z-20" aria-label="Main">
+            <nav className="md:hidden fixed bottom-0 inset-x-0 bg-[#14213D] text-white flex z-20" aria-label="Main">
                 {links.map((l) => (
-                    <NavLink key={l.to} to={l.to}
+                    <NavLink key={l.to} to={l.to} end
                     className={({ isActive }) => `flex-1 text-center py-4 text-sm font-semibold ${isActive ? "text-[#FFC72C]" : ""}`}>
                         {l.label}
                     </NavLink>
