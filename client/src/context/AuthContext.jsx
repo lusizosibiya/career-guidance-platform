@@ -9,13 +9,13 @@ export function AuthProvider({ children }) {
     const [ user, setUser ] = useState(null);
 
     const login = async ({ email }) => {
-        const role = email.toLowerCase().includes('admin') ? 'admin' : 'user';
+        const role = email.toLowerCase().includes('admin') ? 'admin' : 'learner';
         setUser({ name: email.split('@')[0], email, role });
         return role;
     };
     const signup = async ({ name, email}) => {
-        setUser({ name, email, role: 'user' });
-        return 'user';
+        setUser({ name, email, role: 'learner' });
+        return 'learner';
     };
     const logout = () => setUser(null);
 
