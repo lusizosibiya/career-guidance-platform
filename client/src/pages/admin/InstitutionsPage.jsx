@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { institutions as sampleInstitutions } from "../../data/sampleData";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { apiRequest } from "../../lib/api.js";
 
 const defaultRules = {
   subjects_counted: 6,
@@ -31,17 +32,36 @@ const loLabels = {
 };
 
 export default function InstitutionsPage() {
-  const [items, setItems] = useState(sampleInstitutions);
+    const { token } = useAuth();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState(null); // null = form closed, "new" = adding
   const [form, setForm] = useState(emptyForm);
+
+  // load the institutions from the database when the page opens
+  useEffect(() => {
+    apiRequest("/api/institutions")
+      .then(setItems)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
   function openAdd() {
     setForm(structuredClone(emptyForm));
     setEditingId("new");
   }
 
-  function openEdit(institution) {
-    setForm(structuredClone(institution));
+    function openEdit(institution) {
+    // fill in blanks so the form still works if a field is empty in the database
+    setForm({
+      ...structuredClone(emptyForm),
+      ...structuredClone(institution),
+      location: institution.location ?? "",
+      website: institution.website ?? "",
+      aps_rules: { ...structuredClone(defaultRules), ...institution.aps_rules },
+    });
     setEditingId(institution.id);
   }
 
@@ -77,23 +97,44 @@ export default function InstitutionsPage() {
     setForm({ ...form, aps_rules: { ...form.aps_rules, scale } });
   }
 
-  function handleSubmit(e) {
+    async function handleSubmit(e) {
     e.preventDefault();
     // keep the scale ordered from highest to lowest percentage
     const scale = [...form.aps_rules.scale].sort((a, b) => b.min - a.min);
-    const saved = { ...form, aps_rules: { ...form.aps_rules, scale } };
+    const body = {
+      name: form.name,
+      type: form.type,
+      location: form.location,
+      website: form.website,
+      aps_rules: { ...form.aps_rules, scale },
+    };
 
-    if (editingId === "new") {
-      setItems([...items, { ...saved, id: crypto.randomUUID() }]);
-    } else {
-      setItems(items.map((i) => (i.id === editingId ? { ...saved, id: editingId } : i)));
+    setSaving(true);
+    setError("");
+    try {
+      if (editingId === "new") {
+        const created = await apiRequest("/api/institutions", { method: "POST", body, token });
+        setItems([...items, created]);
+      } else {
+        const updated = await apiRequest(`/api/institutions/${editingId}`, { method: "PUT", body, token });
+        setItems(items.map((i) => (i.id === editingId ? updated : i)));
+      }
+      closeForm();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
     }
-    closeForm();
   }
 
-  function handleDelete(institution) {
-    if (window.confirm(`Delete ${institution.name}?`)) {
+  async function handleDelete(institution) {
+    if (!window.confirm(`Delete ${institution.name}?`)) return;
+    setError("");
+    try {
+      await apiRequest(`/api/institutions/${institution.id}`, { method: "DELETE", token });
       setItems(items.filter((i) => i.id !== institution.id));
+    } catch (err) {
+      setError(err.message);
     }
   }
 
@@ -112,6 +153,14 @@ export default function InstitutionsPage() {
         )}
       </div>
 
+      {error && (
+        <p role="alert" className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+      {loading && <p className="text-sm text-gray-500">Loading institutions...</p>}
+    
+      
       {editingId && (
         <form onSubmit={handleSubmit} className="mb-6 space-y-6 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold">
@@ -224,8 +273,8 @@ export default function InstitutionsPage() {
           </fieldset>
 
           <div className="flex gap-2">
-            <button type="submit" className={buttonPrimary}>
-              Save
+            <button type="submit" disabled={saving} className={buttonPrimary}>
+              {saving ? "Saving..." : "Save"}
             </button>
             <button type="button" onClick={closeForm} className={buttonSecondary}>
               Cancel
@@ -246,8 +295,8 @@ export default function InstitutionsPage() {
                 {institution.type === "tvet" ? "TVET college" : "University"} · {institution.location}
               </p>
               <p className="mt-1 text-xs text-gray-500">
-                APS: best {institution.aps_rules.subjects_counted} subjects ·{" "}
-                {loLabels[institution.aps_rules.life_orientation]}
+                APS: best {institution.aps_rules?.subjects_counted ?? "?"} subjects ·{" "}
+                {loLabels[institution.aps_rules?.life_orientation] ?? "Life Orientation not set"}
               </p>
             </div>
             <div className="flex gap-2">
