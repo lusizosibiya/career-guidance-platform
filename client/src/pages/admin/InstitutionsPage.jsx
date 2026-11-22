@@ -29,6 +29,7 @@ const loLabels = {
   exclude: "Life Orientation not counted",
   half: "Life Orientation counts half",
   full: "Life Orientation counts fully",
+  special: "Life Orientation has special rules (see notes)",
 };
 
 export default function InstitutionsPage() {
@@ -216,6 +217,7 @@ export default function InstitutionsPage() {
                   <option value="exclude">Not counted</option>
                   <option value="half">Counts half</option>
                   <option value="full">Counts fully</option>
+                  <option value="special">Special rules (see notes)</option>
                 </select>
               </label>
             </div>
