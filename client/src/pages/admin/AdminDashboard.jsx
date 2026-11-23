@@ -32,10 +32,10 @@ export default function AdminDashboard() {
           <Link
             key={card.label}
             to={card.to}
-            className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm hover:shadow"
+            className="rounded-xl bg-[#14213D] p-5 text-white hover:bg-[#1f3159]"
           >
-            <p className="text-sm text-gray-500">{card.label}</p>
-            <p className="mt-1 text-3xl font-bold">{card.count}</p>
+            <p className="text-sm text-slate-300">{card.label}</p>
+            <p className="mt-1 text-4xl font-extrabold text-[#FFC72C]">{card.count}</p>
           </Link>
         ))}
       </div>

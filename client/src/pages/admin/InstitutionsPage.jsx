@@ -139,16 +139,16 @@ export default function InstitutionsPage() {
     }
   }
 
-  const inputClass = "mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm";
-  const buttonPrimary = "rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700";
-  const buttonSecondary = "rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-100";
+  const inputClass = "mt-1 w-full rounded-md border border-[#D9DFE8] px-3 py-2 text-sm";
+  const buttonPrimary = "rounded-md bg-[#14213D] px-4 py-2 text-sm text-white hover:bg-[#1f3159]";
+  const buttonAccent = "rounded-md bg-[#FFC72C] px-4 py-2 text-sm font-semibold text-[#14213D] hover:brightness-95";
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Institutions</h1>
         {!editingId && (
-          <button onClick={openAdd} className={buttonPrimary}>
+          <button onClick={openAdd} className={buttonAccent}>
             Add institution
           </button>
         )}
@@ -163,7 +163,7 @@ export default function InstitutionsPage() {
     
       
       {editingId && (
-        <form onSubmit={handleSubmit} className="mb-6 space-y-6 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+        <form onSubmit={handleSubmit} className="mb-6 space-y-6 rounded-lg border border-[#D9DFE8] bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold">
             {editingId === "new" ? "Add institution" : "Edit institution"}
           </h2>
@@ -190,7 +190,7 @@ export default function InstitutionsPage() {
             </label>
           </div>
 
-          <fieldset className="space-y-4 rounded-md border border-gray-200 p-4">
+          <fieldset className="space-y-4 rounded-md border border-[#D9DFE8] p-4">
             <legend className="px-1 text-sm font-semibold">APS rules</legend>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -234,7 +234,7 @@ export default function InstitutionsPage() {
                       max="100"
                       value={row.min}
                       onChange={(e) => handleScaleChange(index, "min", e.target.value)}
-                      className="w-20 rounded-md border border-gray-300 px-2 py-1"
+                      className="w-20 rounded-md border border-[#D9DFE8] px-2 py-1"
                     />
                     <span className="text-gray-500">% =</span>
                     <input
@@ -243,7 +243,7 @@ export default function InstitutionsPage() {
                       max="10"
                       value={row.points}
                       onChange={(e) => handleScaleChange(index, "points", e.target.value)}
-                      className="w-16 rounded-md border border-gray-300 px-2 py-1"
+                      className="w-16 rounded-md border border-[#D9DFE8] px-2 py-1"
                     />
                     <span className="text-gray-500">points</span>
                     <button
@@ -256,7 +256,7 @@ export default function InstitutionsPage() {
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={addScaleRow} className="mt-2 text-sm text-blue-600 hover:underline">
+              <button type="button" onClick={addScaleRow} className="mt-2 text-sm text-[#14213D] hover:underline">
                 + Add row
               </button>
             </div>
@@ -289,7 +289,7 @@ export default function InstitutionsPage() {
         {items.map((institution) => (
           <div
             key={institution.id}
-            className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 rounded-lg border border-[#D9DFE8] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
               <p className="font-semibold">{institution.name}</p>
@@ -302,7 +302,7 @@ export default function InstitutionsPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => openEdit(institution)} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100">
+              <button onClick={() => openEdit(institution)} className="rounded-md border border-[#D9DFE8] px-3 py-1.5 text-sm hover:bg-gray-100">
                 Edit
               </button>
               <button onClick={() => handleDelete(institution)} className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">

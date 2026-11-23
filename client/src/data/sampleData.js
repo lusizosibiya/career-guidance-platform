@@ -16,12 +16,13 @@ export const SUBJECTS = [
 ];
 
 export const FIELDS = [
-  "IT / Computer Science",
-  "Accounting",
-  "Humanities",
+  "Accounting / Finance",
+  "Business / Commerce",
   "Engineering",
-  "Nursing & Health",
-  "Logistics & Supply Chain",
+  "Health Sciences / Nursing",
+  "Humanities / Social Sciences",
+  "IT / Business",
+  "IT / Computer Science",
 ];
 
 // Standard 7-point scale, used as the starting point for each university

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { FIELDS, SUBJECTS } from "../../data/sampleData";
+import { FIELDS } from "../../data/sampleData";
+import { SUBJECTS } from "../../data/subjects.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { apiRequest } from "../../lib/api.js";
 
@@ -225,16 +226,16 @@ export default function CoursesPage() {
 
   const visibleCourses = filter === "all" ? items : items.filter((c) => c.institution_id === filter);
 
-  const inputClass = "mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm";
-  const buttonPrimary = "rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700";
-  const buttonSecondary = "rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-100";
+  const inputClass = "mt-1 w-full rounded-md border border-[#D9DFE8] px-3 py-2 text-sm";
+  const buttonPrimary = "rounded-md bg-[#14213D] px-4 py-2 text-sm text-white hover:bg-[#1f3159]";
+  const buttonAccent = "rounded-md bg-[#FFC72C] px-4 py-2 text-sm font-semibold text-[#14213D] hover:brightness-95";
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Courses</h1>
         {!editingId && (
-          <button onClick={openAdd} className={buttonPrimary}>
+          <button onClick={openAdd} className={buttonAccent}>
             Add course
           </button>
         )}
@@ -248,7 +249,7 @@ export default function CoursesPage() {
       {loading && <p className="text-sm text-gray-500">Loading courses...</p>}
 
       {editingId && (
-        <form onSubmit={handleSubmit} className="mb-6 space-y-6 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+        <form onSubmit={handleSubmit} className="mb-6 space-y-6 rounded-lg border border-[#D9DFE8] bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold">{editingId === "new" ? "Add course" : "Edit course"}</h2>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -284,7 +285,7 @@ export default function CoursesPage() {
             </label>
           </div>
 
-          <fieldset className="rounded-md border border-gray-200 p-4">
+          <fieldset className="rounded-md border border-[#D9DFE8] p-4">
             <legend className="px-1 text-sm font-semibold">Fields</legend>
             <div className="grid gap-2 sm:grid-cols-2">
               {FIELDS.map((field) => (
@@ -296,7 +297,7 @@ export default function CoursesPage() {
             </div>
           </fieldset>
 
-          <fieldset className="space-y-3 rounded-md border border-gray-200 p-4">
+          <fieldset className="space-y-3 rounded-md border border-[#D9DFE8] p-4">
             <legend className="px-1 text-sm font-semibold">Subject requirements</legend>
             <p className="text-xs text-gray-500">
               The learner must meet every requirement. Where a requirement lists more than one subject, any one of them is enough.
@@ -307,7 +308,7 @@ export default function CoursesPage() {
             )}
 
             {form.requirement_groups.map((group, groupIndex) => (
-              <div key={groupIndex} className="rounded-md border border-gray-200 bg-gray-50 p-3">
+              <div key={groupIndex} className="rounded-md border border-[#D9DFE8] bg-gray-50 p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-sm font-medium">Requirement {groupIndex + 1}</p>
                   <button type="button" onClick={() => removeGroup(groupIndex)} className="text-sm text-red-600 hover:underline">
@@ -323,7 +324,7 @@ export default function CoursesPage() {
                         <select
                           value={option.subject}
                           onChange={(e) => handleOptionChange(groupIndex, optionIndex, "subject", e.target.value)}
-                          className="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1"
+                          className="flex-1 rounded-md border border-[#D9DFE8] bg-white px-2 py-1"
                         >
                           {SUBJECTS.map((subject) => (
                             <option key={subject} value={subject}>
@@ -338,7 +339,7 @@ export default function CoursesPage() {
                           max="100"
                           value={option.min_percent}
                           onChange={(e) => handleOptionChange(groupIndex, optionIndex, "min_percent", e.target.value)}
-                          className="w-20 rounded-md border border-gray-300 px-2 py-1"
+                          className="w-20 rounded-md border border-[#D9DFE8] px-2 py-1"
                         />
                         <span className="text-gray-500">%</span>
                         {group.options.length > 1 && (
@@ -351,13 +352,13 @@ export default function CoursesPage() {
                   ))}
                 </div>
 
-                <button type="button" onClick={() => addOption(groupIndex)} className="mt-2 text-sm text-blue-600 hover:underline">
+                <button type="button" onClick={() => addOption(groupIndex)} className="mt-2 text-sm text-[#14213D] hover:underline">
                   + Add alternative subject
                 </button>
               </div>
             ))}
 
-            <button type="button" onClick={addGroup} className="text-sm text-blue-600 hover:underline">
+            <button type="button" onClick={addGroup} className="text-sm text-[#14213D] hover:underline">
               + Add requirement
             </button>
           </fieldset>
@@ -374,7 +375,7 @@ export default function CoursesPage() {
             />
           </label>
 
-          <fieldset className="rounded-md border border-gray-200 p-4">
+          <fieldset className="rounded-md border border-[#D9DFE8] p-4">
             <legend className="px-1 text-sm font-semibold">Careers this course leads to</legend>
             <div className="grid gap-2 sm:grid-cols-2">
               {careers.map((career) => (
@@ -402,7 +403,7 @@ export default function CoursesPage() {
       )}
 
       <div className="mb-4">
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="rounded-md border border-[#D9DFE8] bg-white px-3 py-2 text-sm">
           <option value="all">All institutions</option>
           {institutions.map((inst) => (
             <option key={inst.id} value={inst.id}>
@@ -416,7 +417,7 @@ export default function CoursesPage() {
         {visibleCourses.map((course) => (
           <div
             key={course.id}
-            className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 rounded-lg border border-[#D9DFE8] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
               <p className="font-semibold">{course.name}</p>
@@ -425,7 +426,7 @@ export default function CoursesPage() {
               </p>
               <div className="mt-2 flex flex-wrap gap-1">
                 {(course.fields ?? []).map((field) => (
-                  <span key={field} className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+                  <span key={field} className="rounded-full bg-[#FFC72C]/25 px-2 py-0.5 text-xs text-[#14213D]">
                     {field}
                   </span>
                 ))}
@@ -435,7 +436,7 @@ export default function CoursesPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => openEdit(course)} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-100">
+              <button onClick={() => openEdit(course)} className="rounded-md border border-[#D9DFE8] px-3 py-1.5 text-sm hover:bg-gray-100">
                 Edit
               </button>
               <button onClick={() => handleDelete(course)} className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
