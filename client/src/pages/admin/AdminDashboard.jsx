@@ -1,13 +1,29 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { institutions, courses, careers } from "../../data/sampleData";
-
-const cards = [
-  { label: "Institutions", count: institutions.length, to: "/admin/institutions" },
-  { label: "Courses", count: courses.length, to: "/admin/courses" },
-  { label: "Careers", count: careers.length, to: "/admin" },
-];
+import { apiRequest } from "../../lib/api.js";
 
 export default function AdminDashboard() {
+  const [counts, setCounts] = useState({ institutions: "-", courses: "-", careers: "-" });
+
+  // count what is in the database
+  useEffect(() => {
+    Promise.all([
+      apiRequest("/api/institutions"),
+      apiRequest("/api/courses"),
+      apiRequest("/api/careers"),
+    ])
+      .then(([institutions, courses, careers]) =>
+        setCounts({ institutions: institutions.length, courses: courses.length, careers: careers.length })
+      )
+      .catch(() => {});
+  }, []);
+
+  const cards = [
+    { label: "Institutions", count: counts.institutions, to: "/admin/institutions" },
+    { label: "Courses", count: counts.courses, to: "/admin/courses" },
+    { label: "Careers", count: counts.careers, to: "/admin" },
+  ];
+  
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold">Dashboard</h1>

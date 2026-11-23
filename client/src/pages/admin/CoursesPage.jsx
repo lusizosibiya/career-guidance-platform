@@ -1,15 +1,11 @@
-import { useState } from "react";
-import {
-  courses as sampleCourses,
-  institutions,
-  careers,
-  FIELDS,
-  SUBJECTS,
-} from "../../data/sampleData";
+import { useEffect, useState } from "react";
+import { FIELDS, SUBJECTS } from "../../data/sampleData";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { apiRequest } from "../../lib/api.js";
 
 const emptyForm = {
   name: "",
-  institution_id: institutions[0]?.id ?? "",
+  institution_id: "",
   fields: [],
   qualification_type: "Degree",
   min_aps: 0,
@@ -21,25 +17,88 @@ const emptyForm = {
 
 const newOption = () => ({ subject: SUBJECTS[0], min_percent: 50 });
 
-function institutionName(id) {
-  return institutions.find((i) => i.id === id)?.name ?? "Unknown institution";
+// database rows -> form groups (rows with the same group_no are alternatives)
+function rowsToGroups(rows) {
+  const groups = {};
+  rows.forEach((row) => {
+    groups[row.group_no] ??= { options: [] };
+    groups[row.group_no].options.push({ subject: row.subject, min_percent: row.min_percent });
+  });
+  return Object.keys(groups)
+    .sort((a, b) => a - b)
+    .map((key) => groups[key]);
+}
+
+// form groups -> database rows, numbering the groups 1, 2, 3...
+function groupsToRows(groups) {
+  return groups.flatMap((group, index) =>
+    group.options.map((option) => ({
+      subject: option.subject,
+      min_percent: option.min_percent,
+      group_no: index + 1,
+    }))
+  );
 }
 
 export default function CoursesPage() {
-  const [items, setItems] = useState(sampleCourses);
+  const { token } = useAuth();
+  const [items, setItems] = useState([]);
+  const [institutions, setInstitutions] = useState([]);
+  const [careers, setCareers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState(null); // null = form closed, "new" = adding
   const [form, setForm] = useState(emptyForm);
   const [filter, setFilter] = useState("all");
 
+  // load courses, institutions and careers from the database when the page opens
+  useEffect(() => {
+    Promise.all([
+      apiRequest("/api/courses"),
+      apiRequest("/api/institutions"),
+      apiRequest("/api/careers"),
+    ])
+      .then(([courseData, institutionData, careerData]) => {
+        setItems(courseData);
+        setInstitutions(institutionData);
+        setCareers(careerData);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function institutionName(id) {
+    return institutions.find((i) => i.id === id)?.name ?? "Unknown institution";
+  }
+
   function openAdd() {
-    setForm(structuredClone(emptyForm));
+    setForm({ ...structuredClone(emptyForm), institution_id: institutions[0]?.id ?? "" });
     setEditingId("new");
   }
 
-  function openEdit(course) {
-    // fill in any missing keys so older sample courses still work in the form
-    setForm({ ...structuredClone(emptyForm), ...structuredClone(course) });
-    setEditingId(course.id);
+  async function openEdit(course) {
+    setError("");
+    try {
+      // requirements and careers are stored separately, so load them for this course
+      const [requirementRows, linkedCareers] = await Promise.all([
+        apiRequest(`/api/courses/${course.id}/requirements`),
+        apiRequest(`/api/courses/${course.id}/careers`),
+      ]);
+      setForm({
+        ...structuredClone(emptyForm),
+        ...structuredClone(course),
+        fields: course.fields ?? [],
+        min_aps: course.min_aps ?? 0,
+        duration: course.duration ?? "",
+        additional_requirements: course.additional_requirements ?? "",
+        requirement_groups: rowsToGroups(requirementRows),
+        career_ids: linkedCareers.map((career) => career.id),
+      });
+      setEditingId(course.id);
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   function closeForm() {
@@ -103,24 +162,64 @@ export default function CoursesPage() {
     );
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (form.fields.length === 0) {
       alert("Choose at least one field for this course.");
       return;
     }
 
-    if (editingId === "new") {
-      setItems([...items, { ...form, id: crypto.randomUUID() }]);
-    } else {
-      setItems(items.map((c) => (c.id === editingId ? { ...form, id: editingId } : c)));
+    const body = {
+      institution_id: form.institution_id,
+      name: form.name,
+      fields: form.fields,
+      qualification_type: form.qualification_type,
+      min_aps: form.min_aps,
+      duration: form.duration,
+      additional_requirements: form.additional_requirements,
+    };
+
+    setSaving(true);
+    setError("");
+    try {
+      const saved =
+        editingId === "new"
+          ? await apiRequest("/api/courses", { method: "POST", body, token })
+          : await apiRequest(`/api/courses/${editingId}`, { method: "PUT", body, token });
+
+      // requirements and careers are saved separately for the course
+      await apiRequest(`/api/courses/${saved.id}/requirements`, {
+        method: "PUT",
+        body: { requirements: groupsToRows(form.requirement_groups) },
+        token,
+      });
+      await apiRequest(`/api/courses/${saved.id}/careers`, {
+        method: "PUT",
+        body: { career_ids: form.career_ids },
+        token,
+      });
+
+      if (editingId === "new") {
+        setItems([...items, saved]);
+      } else {
+        setItems(items.map((c) => (c.id === saved.id ? saved : c)));
+      }
+      closeForm();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
     }
-    closeForm();
   }
 
-  function handleDelete(course) {
-    if (window.confirm(`Delete ${course.name}?`)) {
+  async function handleDelete(course) {
+    if (!window.confirm(`Delete ${course.name}?`)) return;
+    setError("");
+    try {
+      await apiRequest(`/api/courses/${course.id}`, { method: "DELETE", token });
       setItems(items.filter((c) => c.id !== course.id));
+    } catch (err) {
+      setError(err.message);
     }
   }
 
@@ -140,6 +239,13 @@ export default function CoursesPage() {
           </button>
         )}
       </div>
+
+      {error && (
+        <p role="alert" className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+      {loading && <p className="text-sm text-gray-500">Loading courses...</p>}
 
       {editingId && (
         <form onSubmit={handleSubmit} className="mb-6 space-y-6 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
@@ -285,8 +391,8 @@ export default function CoursesPage() {
           </fieldset>
 
           <div className="flex gap-2">
-            <button type="submit" className={buttonPrimary}>
-              Save
+            <button type="submit" disabled={saving} className={buttonPrimary}>
+              {saving ? "Saving..." : "Save"}
             </button>
             <button type="button" onClick={closeForm} className={buttonSecondary}>
               Cancel
@@ -318,14 +424,14 @@ export default function CoursesPage() {
                 {institutionName(course.institution_id)} · {course.qualification_type} · {course.duration}
               </p>
               <div className="mt-2 flex flex-wrap gap-1">
-                {course.fields.map((field) => (
+                {(course.fields ?? []).map((field) => (
                   <span key={field} className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
                     {field}
                   </span>
                 ))}
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                Min APS: {course.min_aps} · {(course.requirement_groups ?? []).length} subject requirements
+                Min APS: {course.min_aps ?? "not set"}
               </p>
             </div>
             <div className="flex gap-2">
