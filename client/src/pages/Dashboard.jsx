@@ -2,13 +2,12 @@ import { Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { useMarks } from "../context/MarksContext"
 import { Card } from "../components/UI.jsx"
-import {  initialCourses } from "../data/mock.js"
-import { matchCourses } from "../lib/match.js"
+import { useMatch } from "../lib/useMatch.js"
 
 function Dashboard() {
     const { user } = useAuth();
     const { marks } = useMarks();
-    const r = marks ? matchCourses(initialCourses, marks) : null;
+    const { data, loading } = useMatch(marks);
 
     return (
         <div className="space-y-5">
@@ -17,16 +16,26 @@ function Dashboard() {
                 <p className="text-slate-600">Find out which courses your marks open up.</p>
             </div>
 
-            {r ? (
-             <div className="bg-[#14213D] text-white rounded-xl p-5 flex items-center justify-between">
-                <div>
-                   <p className="text-sm text-slate-300">Your APS score</p>
-                   <p className="text-5xl font-extrabold text-[#FFC72C]">{r.aps}</p>
-                    </div> 
-                    <p className="text-sm text-right text-slate-300">
-                        {r.qualify.legnth} you qualify for<br />{r.almost.length} almost there
-                    </p>
+            {marks?.length ? (
+             <div className="bg-[#14213D] text-white rounded-xl p-5">
+                <p className="text-sm text-slate-300">Your APS score</p>
+                {loading && <p className="text-sm text-slate-300 mt-1">Working it out...</p>}
+                {data && (
+                    <>
+                    <div className="mt-2 flex flex-wrap gap-6">
+                        {data.aps_by_institution.map((a) => (
+                            <div key={a.institution_id}>
+                                <p className="text-xs text-slate-300">{a.institution}</p>
+                                <p className="text-4xl font-extrabold text-[#FFC72C]">{a.aps ?? "-"}</p>
+                            </div>
+                        ))}
                     </div>
+                    <p className="text-sm text-slate-300 mt-3">
+                        {data.summary.eligible} you qualify for · {data.summary.needs_review} to check
+                    </p>
+                    </>
+                )}
+             </div>
             ) : (
                 <Card className="p-5">
                     <p className="font-bold">You have not entered your marks yet</p>
