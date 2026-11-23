@@ -18,7 +18,9 @@ export async function apiRequest(path, { method = "GET", body, token } = {}) {
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error(data?.message || "Something went wrong. Please try again.");
+    const error = new Error(data?.message || "Something went wrong. Please try again.");
+    error.status = res.status; // lets callers tell an expired login (401) from other problems
+    throw error;
   }
 
   return data;
