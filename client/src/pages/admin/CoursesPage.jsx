@@ -384,7 +384,7 @@ export default function CoursesPage() {
                     checked={form.career_ids.includes(career.id)}
                     onChange={() => toggleInList("career_ids", career.id)}
                   />
-                  {career.title}
+                {career.name}
                 </label>
               ))}
             </div>
