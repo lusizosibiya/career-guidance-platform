@@ -228,14 +228,14 @@ export default function CoursesPage() {
 
   const inputClass = "mt-1 w-full rounded-md border border-[#D9DFE8] px-3 py-2 text-sm";
   const buttonPrimary = "rounded-md bg-[#14213D] px-4 py-2 text-sm text-white hover:bg-[#1f3159]";
-  const buttonSecondary = "rounded-md border border-[#D9DFE8] px-4 py-2 text-sm hover:bg-gray-100";
+  const buttonAccent = "rounded-md bg-[#FFC72C] px-4 py-2 text-sm font-semibold text-[#14213D] hover:brightness-95";
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Courses</h1>
         {!editingId && (
-          <button onClick={openAdd} className={buttonPrimary}>
+          <button onClick={openAdd} className={buttonAccent}>
             Add course
           </button>
         )}
