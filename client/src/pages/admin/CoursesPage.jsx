@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { FIELDS, SUBJECTS } from "../../data/sampleData";
+import { FIELDS } from "../../data/sampleData";
+import { SUBJECTS } from "../../data/subjects.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { apiRequest } from "../../lib/api.js";
 
