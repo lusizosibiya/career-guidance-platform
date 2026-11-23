@@ -4,6 +4,9 @@ import dotenv from "dotenv"
 import courseRoutes from "./routes/courseRoutes.js";
 import { supabase } from "./config/supabase.js";
 import authRoutes from "./routes/authRoutes.js";
+import institutionRoutes from "./routes/institutionRoutes.js";
+import careerRoutes from "./routes/careerRoutes.js";
+import matchingRoutes from "./routes/matchingRoutes.js";
 
 dotenv.config();
 
@@ -11,6 +14,12 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.use("/api/match", matchingRoutes);
+
+app.use("/api/careers", careerRoutes);
+
+app.use("/api/institutions", institutionRoutes);
 
 app.use("/api/auth", authRoutes);
 
