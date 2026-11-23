@@ -12,6 +12,8 @@ const emptyForm = {
   min_aps: 0,
   duration: "",
   additional_requirements: "",
+  application_deadline: "",
+  application_url: "",
   requirement_groups: [],
   career_ids: [],
 };
@@ -23,7 +25,10 @@ function rowsToGroups(rows) {
   const groups = {};
   rows.forEach((row) => {
     groups[row.group_no] ??= { options: [] };
-    groups[row.group_no].options.push({ subject: row.subject, min_percent: row.min_percent });
+    groups[row.group_no].options.push({
+      subject: row.subject,
+      min_percent: row.min_percent,
+    });
   });
   return Object.keys(groups)
     .sort((a, b) => a - b)
@@ -37,7 +42,7 @@ function groupsToRows(groups) {
       subject: option.subject,
       min_percent: option.min_percent,
       group_no: index + 1,
-    }))
+    })),
   );
 }
 
@@ -74,7 +79,10 @@ export default function CoursesPage() {
   }
 
   function openAdd() {
-    setForm({ ...structuredClone(emptyForm), institution_id: institutions[0]?.id ?? "" });
+    setForm({
+      ...structuredClone(emptyForm),
+      institution_id: institutions[0]?.id ?? "",
+    });
     setEditingId("new");
   }
 
@@ -93,6 +101,8 @@ export default function CoursesPage() {
         min_aps: course.min_aps ?? 0,
         duration: course.duration ?? "",
         additional_requirements: course.additional_requirements ?? "",
+        application_deadline: course.application_deadline?.slice(0, 10) ?? "",
+        application_url: course.application_url ?? "",
         requirement_groups: rowsToGroups(requirementRows),
         career_ids: linkedCareers.map((career) => career.id),
       });
@@ -113,11 +123,13 @@ export default function CoursesPage() {
 
   function toggleInList(key, value) {
     const list = form[key];
-    const updated = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+    const updated = list.includes(value)
+      ? list.filter((v) => v !== value)
+      : [...list, value];
     setForm({ ...form, [key]: updated });
   }
 
-    // the learner must meet every group, but only one subject option inside each group
+  // the learner must meet every group, but only one subject option inside each group
   function setGroups(requirement_groups) {
     setForm({ ...form, requirement_groups });
   }
@@ -133,15 +145,17 @@ export default function CoursesPage() {
   function addOption(groupIndex) {
     setGroups(
       form.requirement_groups.map((group, i) =>
-        i === groupIndex ? { options: [...group.options, newOption()] } : group
-      )
+        i === groupIndex ? { options: [...group.options, newOption()] } : group,
+      ),
     );
   }
 
   function removeOption(groupIndex, optionIndex) {
     const groups = form.requirement_groups
       .map((group, i) =>
-        i === groupIndex ? { options: group.options.filter((_, j) => j !== optionIndex) } : group
+        i === groupIndex
+          ? { options: group.options.filter((_, j) => j !== optionIndex) }
+          : group,
       )
       .filter((group) => group.options.length > 0);
     setGroups(groups);
@@ -154,12 +168,15 @@ export default function CoursesPage() {
           ? {
               options: group.options.map((option, j) =>
                 j === optionIndex
-                  ? { ...option, [key]: key === "min_percent" ? Number(value) : value }
-                  : option
+                  ? {
+                      ...option,
+                      [key]: key === "min_percent" ? Number(value) : value,
+                    }
+                  : option,
               ),
             }
-          : group
-      )
+          : group,
+      ),
     );
   }
 
@@ -178,6 +195,8 @@ export default function CoursesPage() {
       min_aps: form.min_aps,
       duration: form.duration,
       additional_requirements: form.additional_requirements,
+      application_deadline: form.application_deadline || null,
+      application_url: form.application_url || null,
     };
 
     setSaving(true);
@@ -186,7 +205,11 @@ export default function CoursesPage() {
       const saved =
         editingId === "new"
           ? await apiRequest("/api/courses", { method: "POST", body, token })
-          : await apiRequest(`/api/courses/${editingId}`, { method: "PUT", body, token });
+          : await apiRequest(`/api/courses/${editingId}`, {
+              method: "PUT",
+              body,
+              token,
+            });
 
       // requirements and careers are saved separately for the course
       await apiRequest(`/api/courses/${saved.id}/requirements`, {
@@ -217,18 +240,27 @@ export default function CoursesPage() {
     if (!window.confirm(`Delete ${course.name}?`)) return;
     setError("");
     try {
-      await apiRequest(`/api/courses/${course.id}`, { method: "DELETE", token });
+      await apiRequest(`/api/courses/${course.id}`, {
+        method: "DELETE",
+        token,
+      });
       setItems(items.filter((c) => c.id !== course.id));
     } catch (err) {
       setError(err.message);
     }
   }
 
-  const visibleCourses = filter === "all" ? items : items.filter((c) => c.institution_id === filter);
+  const visibleCourses =
+    filter === "all" ? items : items.filter((c) => c.institution_id === filter);
 
-  const inputClass = "mt-1 w-full rounded-md border border-[#D9DFE8] px-3 py-2 text-sm";
-  const buttonPrimary = "rounded-md bg-[#14213D] px-4 py-2 text-sm text-white hover:bg-[#1f3159]";
-  const buttonAccent = "rounded-md bg-[#FFC72C] px-4 py-2 text-sm font-semibold text-[#14213D] hover:brightness-95";
+  const inputClass =
+    "mt-1 w-full rounded-md border border-[#D9DFE8] px-3 py-2 text-sm";
+  const buttonPrimary =
+    "rounded-md bg-[#14213D] px-4 py-2 text-sm text-white hover:bg-[#1f3159]";
+  const buttonAccent =
+    "rounded-md bg-[#FFC72C] px-4 py-2 text-sm font-semibold text-[#14213D] hover:brightness-95";
+  const buttonSecondary =
+    "rounded-md border border-[#D9DFE8] px-4 py-2 text-sm hover:bg-gray-100";
 
   return (
     <div>
@@ -242,24 +274,43 @@ export default function CoursesPage() {
       </div>
 
       {error && (
-        <p role="alert" className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p
+          role="alert"
+          className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
           {error}
         </p>
       )}
       {loading && <p className="text-sm text-gray-500">Loading courses...</p>}
 
       {editingId && (
-        <form onSubmit={handleSubmit} className="mb-6 space-y-6 rounded-lg border border-[#D9DFE8] bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold">{editingId === "new" ? "Add course" : "Edit course"}</h2>
+        <form
+          onSubmit={handleSubmit}
+          className="mb-6 space-y-6 rounded-lg border border-[#D9DFE8] bg-white p-5 shadow-sm"
+        >
+          <h2 className="text-lg font-semibold">
+            {editingId === "new" ? "Add course" : "Edit course"}
+          </h2>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm sm:col-span-2">
               Course name
-              <input name="name" value={form.name} onChange={handleChange} required className={inputClass} />
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+                className={inputClass}
+              />
             </label>
             <label className="block text-sm">
               Institution
-              <select name="institution_id" value={form.institution_id} onChange={handleChange} className={inputClass}>
+              <select
+                name="institution_id"
+                value={form.institution_id}
+                onChange={handleChange}
+                className={inputClass}
+              >
                 {institutions.map((inst) => (
                   <option key={inst.id} value={inst.id}>
                     {inst.name}
@@ -269,7 +320,12 @@ export default function CoursesPage() {
             </label>
             <label className="block text-sm">
               Qualification type
-              <select name="qualification_type" value={form.qualification_type} onChange={handleChange} className={inputClass}>
+              <select
+                name="qualification_type"
+                value={form.qualification_type}
+                onChange={handleChange}
+                className={inputClass}
+              >
                 <option value="Degree">Degree</option>
                 <option value="Diploma">Diploma</option>
                 <option value="Higher Certificate">Higher Certificate</option>
@@ -277,11 +333,50 @@ export default function CoursesPage() {
             </label>
             <label className="block text-sm">
               Minimum APS
-              <input name="min_aps" type="number" min="0" max="60" value={form.min_aps} onChange={handleChange} className={inputClass} />
+              <input
+                name="min_aps"
+                type="number"
+                min="0"
+                max="60"
+                value={form.min_aps}
+                onChange={handleChange}
+                className={inputClass}
+              />
             </label>
             <label className="block text-sm">
               Duration
-              <input name="duration" value={form.duration} onChange={handleChange} placeholder="e.g. 3 years" className={inputClass} />
+              <input
+                name="duration"
+                value={form.duration}
+                onChange={handleChange}
+                placeholder="e.g. 3 years"
+                className={inputClass}
+              />
+            </label>
+
+            {/* APPLICATION DEADLINE */}
+            <label className="block text-sm">
+              Application deadline
+              <input
+                type="date"
+                name="application_deadline"
+                value={form.application_deadline ?? ""}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </label>
+
+            {/* APPLICATION URL */}
+            <label className="block text-sm">
+              Application link
+              <input
+                type="url"
+                name="application_url"
+                value={form.application_url ?? ""}
+                onChange={handleChange}
+                placeholder="https://www.university.ac.za/apply"
+                className={inputClass}
+              />
             </label>
           </div>
 
@@ -290,7 +385,11 @@ export default function CoursesPage() {
             <div className="grid gap-2 sm:grid-cols-2">
               {FIELDS.map((field) => (
                 <label key={field} className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={form.fields.includes(field)} onChange={() => toggleInList("fields", field)} />
+                  <input
+                    type="checkbox"
+                    checked={form.fields.includes(field)}
+                    onChange={() => toggleInList("fields", field)}
+                  />
                   {field}
                 </label>
               ))}
@@ -298,20 +397,34 @@ export default function CoursesPage() {
           </fieldset>
 
           <fieldset className="space-y-3 rounded-md border border-[#D9DFE8] p-4">
-            <legend className="px-1 text-sm font-semibold">Subject requirements</legend>
+            <legend className="px-1 text-sm font-semibold">
+              Subject requirements
+            </legend>
             <p className="text-xs text-gray-500">
-              The learner must meet every requirement. Where a requirement lists more than one subject, any one of them is enough.
+              The learner must meet every requirement. Where a requirement lists
+              more than one subject, any one of them is enough.
             </p>
 
             {form.requirement_groups.length === 0 && (
-              <p className="text-sm text-gray-500">No subject requirements added yet.</p>
+              <p className="text-sm text-gray-500">
+                No subject requirements added yet.
+              </p>
             )}
 
             {form.requirement_groups.map((group, groupIndex) => (
-              <div key={groupIndex} className="rounded-md border border-[#D9DFE8] bg-gray-50 p-3">
+              <div
+                key={groupIndex}
+                className="rounded-md border border-[#D9DFE8] bg-gray-50 p-3"
+              >
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="text-sm font-medium">Requirement {groupIndex + 1}</p>
-                  <button type="button" onClick={() => removeGroup(groupIndex)} className="text-sm text-red-600 hover:underline">
+                  <p className="text-sm font-medium">
+                    Requirement {groupIndex + 1}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => removeGroup(groupIndex)}
+                    className="text-sm text-red-600 hover:underline"
+                  >
                     Remove requirement
                   </button>
                 </div>
@@ -319,11 +432,22 @@ export default function CoursesPage() {
                 <div className="space-y-2">
                   {group.options.map((option, optionIndex) => (
                     <div key={optionIndex}>
-                      {optionIndex > 0 && <p className="mb-2 text-xs font-semibold uppercase text-gray-400">or</p>}
+                      {optionIndex > 0 && (
+                        <p className="mb-2 text-xs font-semibold uppercase text-gray-400">
+                          or
+                        </p>
+                      )}
                       <div className="flex flex-wrap items-center gap-2 text-sm">
                         <select
                           value={option.subject}
-                          onChange={(e) => handleOptionChange(groupIndex, optionIndex, "subject", e.target.value)}
+                          onChange={(e) =>
+                            handleOptionChange(
+                              groupIndex,
+                              optionIndex,
+                              "subject",
+                              e.target.value,
+                            )
+                          }
                           className="flex-1 rounded-md border border-[#D9DFE8] bg-white px-2 py-1"
                         >
                           {SUBJECTS.map((subject) => (
@@ -338,12 +462,25 @@ export default function CoursesPage() {
                           min="0"
                           max="100"
                           value={option.min_percent}
-                          onChange={(e) => handleOptionChange(groupIndex, optionIndex, "min_percent", e.target.value)}
+                          onChange={(e) =>
+                            handleOptionChange(
+                              groupIndex,
+                              optionIndex,
+                              "min_percent",
+                              e.target.value,
+                            )
+                          }
                           className="w-20 rounded-md border border-[#D9DFE8] px-2 py-1"
                         />
                         <span className="text-gray-500">%</span>
                         {group.options.length > 1 && (
-                          <button type="button" onClick={() => removeOption(groupIndex, optionIndex)} className="text-red-600 hover:underline">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeOption(groupIndex, optionIndex)
+                            }
+                            className="text-red-600 hover:underline"
+                          >
                             Remove
                           </button>
                         )}
@@ -352,13 +489,21 @@ export default function CoursesPage() {
                   ))}
                 </div>
 
-                <button type="button" onClick={() => addOption(groupIndex)} className="mt-2 text-sm text-[#14213D] hover:underline">
+                <button
+                  type="button"
+                  onClick={() => addOption(groupIndex)}
+                  className="mt-2 text-sm text-[#14213D] hover:underline"
+                >
                   + Add alternative subject
                 </button>
               </div>
             ))}
 
-            <button type="button" onClick={addGroup} className="text-sm text-[#14213D] hover:underline">
+            <button
+              type="button"
+              onClick={addGroup}
+              className="text-sm text-[#14213D] hover:underline"
+            >
               + Add requirement
             </button>
           </fieldset>
@@ -376,16 +521,21 @@ export default function CoursesPage() {
           </label>
 
           <fieldset className="rounded-md border border-[#D9DFE8] p-4">
-            <legend className="px-1 text-sm font-semibold">Careers this course leads to</legend>
+            <legend className="px-1 text-sm font-semibold">
+              Careers this course leads to
+            </legend>
             <div className="grid gap-2 sm:grid-cols-2">
               {careers.map((career) => (
-                <label key={career.id} className="flex items-center gap-2 text-sm">
+                <label
+                  key={career.id}
+                  className="flex items-center gap-2 text-sm"
+                >
                   <input
                     type="checkbox"
                     checked={form.career_ids.includes(career.id)}
                     onChange={() => toggleInList("career_ids", career.id)}
                   />
-                {career.name}
+                  {career.name}
                 </label>
               ))}
             </div>
@@ -395,7 +545,11 @@ export default function CoursesPage() {
             <button type="submit" disabled={saving} className={buttonPrimary}>
               {saving ? "Saving..." : "Save"}
             </button>
-            <button type="button" onClick={closeForm} className={buttonSecondary}>
+            <button
+              type="button"
+              onClick={closeForm}
+              className={buttonSecondary}
+            >
               Cancel
             </button>
           </div>
@@ -403,7 +557,11 @@ export default function CoursesPage() {
       )}
 
       <div className="mb-4">
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="rounded-md border border-[#D9DFE8] bg-white px-3 py-2 text-sm">
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="rounded-md border border-[#D9DFE8] bg-white px-3 py-2 text-sm"
+        >
           <option value="all">All institutions</option>
           {institutions.map((inst) => (
             <option key={inst.id} value={inst.id}>
@@ -422,11 +580,15 @@ export default function CoursesPage() {
             <div>
               <p className="font-semibold">{course.name}</p>
               <p className="text-sm text-gray-500">
-                {institutionName(course.institution_id)} · {course.qualification_type} · {course.duration}
+                {institutionName(course.institution_id)} ·{" "}
+                {course.qualification_type} · {course.duration}
               </p>
               <div className="mt-2 flex flex-wrap gap-1">
                 {(course.fields ?? []).map((field) => (
-                  <span key={field} className="rounded-full bg-[#FFC72C]/25 px-2 py-0.5 text-xs text-[#14213D]">
+                  <span
+                    key={field}
+                    className="rounded-full bg-[#FFC72C]/25 px-2 py-0.5 text-xs text-[#14213D]"
+                  >
                     {field}
                   </span>
                 ))}
@@ -436,16 +598,24 @@ export default function CoursesPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => openEdit(course)} className="rounded-md border border-[#D9DFE8] px-3 py-1.5 text-sm hover:bg-gray-100">
+              <button
+                onClick={() => openEdit(course)}
+                className="rounded-md border border-[#D9DFE8] px-3 py-1.5 text-sm hover:bg-gray-100"
+              >
                 Edit
               </button>
-              <button onClick={() => handleDelete(course)} className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
+              <button
+                onClick={() => handleDelete(course)}
+                className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+              >
                 Delete
               </button>
             </div>
           </div>
         ))}
-        {visibleCourses.length === 0 && <p className="text-sm text-gray-500">No courses found.</p>}
+        {visibleCourses.length === 0 && (
+          <p className="text-sm text-gray-500">No courses found.</p>
+        )}
       </div>
     </div>
   );
