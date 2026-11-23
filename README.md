@@ -364,9 +364,9 @@ The list above is a **verification checklist**, not a claim that every item has 
 
 PathPlug was developed as a collaborative full-stack software development project by:
 
-- **Andre** — Backend/frontend integration, learner marks experience, reusable matching hook, and shared project development.
-- **Yolanda** — Frontend development and interface design contributions.
-- **Lusizo Sibiya** — Backend matching and database-related development/testing; enhanced learner Results page with admission feedback, career information, demo salary ranges, and application details; admin course application-field enhancements and UI fixes; project documentation.
+- **Andre** — Backend/frontend integration, learner marks experience, reusable matching hook, and shared project development; project documentation.
+- **Yolanda** — Frontend development and interface design contributions; project documentation.
+- **Lusizo Sibiya** — Backend matching and database-related development/testing; enhanced learner Results page with admission feedback, career information, verified salary ranges, and application details; admin course application-field enhancements and UI fixes; project documentation.
 
 All team members contributed through Git/GitHub collaboration and shared project testing. Individual contributions can be further clarified against the merged pull-request history.
 
@@ -377,6 +377,7 @@ The original team problem statement (15 November 2026, attributed to Andre) cite
 1. **Ajayi, Moosa & Aloka (2023).** Research concerning Grade 12 learners and career guidance in Gauteng East township secondary schools, as cited in the team's original problem statement.
 2. **TimesLIVE (26 November 2025).** Reporting on comments attributed to Gauteng Education MEC Matome Chiloane about first-year dropout rates and career guidance, as cited in the original statement.
 3. **BusinessTech (8 May 2024).** Reporting on career-guidance access and information attributed to student finance provider Fundi, as cited in the original statement.
+
 
 *These are references carried over from the team's proposal. Full bibliographic details and links should be verified before presenting them as independently validated academic sources.*
 
