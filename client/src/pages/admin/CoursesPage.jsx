@@ -15,9 +15,11 @@ const emptyForm = {
   min_aps: 0,
   duration: "",
   additional_requirements: "",
-  requirements: [],
+  requirement_groups: [],
   career_ids: [],
 };
+
+const newOption = () => ({ subject: SUBJECTS[0], min_percent: 50 });
 
 function institutionName(id) {
   return institutions.find((i) => i.id === id)?.name ?? "Unknown institution";
@@ -55,21 +57,50 @@ export default function CoursesPage() {
     setForm({ ...form, [key]: updated });
   }
 
-  function handleRequirementChange(index, key, value) {
-    const requirements = form.requirements.map((req, i) =>
-      i === index ? { ...req, [key]: key === "min_percent" ? Number(value) : value } : req
+    // the learner must meet every group, but only one subject option inside each group
+  function setGroups(requirement_groups) {
+    setForm({ ...form, requirement_groups });
+  }
+
+  function addGroup() {
+    setGroups([...form.requirement_groups, { options: [newOption()] }]);
+  }
+
+  function removeGroup(groupIndex) {
+    setGroups(form.requirement_groups.filter((_, i) => i !== groupIndex));
+  }
+
+  function addOption(groupIndex) {
+    setGroups(
+      form.requirement_groups.map((group, i) =>
+        i === groupIndex ? { options: [...group.options, newOption()] } : group
+      )
     );
-    setForm({ ...form, requirements });
   }
 
-  function addRequirement() {
-    const requirements = [...form.requirements, { subject: SUBJECTS[0], min_percent: 50 }];
-    setForm({ ...form, requirements });
+  function removeOption(groupIndex, optionIndex) {
+    const groups = form.requirement_groups
+      .map((group, i) =>
+        i === groupIndex ? { options: group.options.filter((_, j) => j !== optionIndex) } : group
+      )
+      .filter((group) => group.options.length > 0);
+    setGroups(groups);
   }
 
-  function removeRequirement(index) {
-    const requirements = form.requirements.filter((_, i) => i !== index);
-    setForm({ ...form, requirements });
+  function handleOptionChange(groupIndex, optionIndex, key, value) {
+    setGroups(
+      form.requirement_groups.map((group, i) =>
+        i === groupIndex
+          ? {
+              options: group.options.map((option, j) =>
+                j === optionIndex
+                  ? { ...option, [key]: key === "min_percent" ? Number(value) : value }
+                  : option
+              ),
+            }
+          : group
+      )
+    );
   }
 
   function handleSubmit(e) {
@@ -159,43 +190,69 @@ export default function CoursesPage() {
             </div>
           </fieldset>
 
-          <fieldset className="rounded-md border border-gray-200 p-4">
+          <fieldset className="space-y-3 rounded-md border border-gray-200 p-4">
             <legend className="px-1 text-sm font-semibold">Subject requirements</legend>
-            {form.requirements.length === 0 && (
-              <p className="mb-2 text-sm text-gray-500">No subject requirements added yet.</p>
+            <p className="text-xs text-gray-500">
+              The learner must meet every requirement. Where a requirement lists more than one subject, any one of them is enough.
+            </p>
+
+            {form.requirement_groups.length === 0 && (
+              <p className="text-sm text-gray-500">No subject requirements added yet.</p>
             )}
-            <div className="space-y-2">
-              {form.requirements.map((req, index) => (
-                <div key={index} className="flex flex-wrap items-center gap-2 text-sm">
-                  <select
-                    value={req.subject}
-                    onChange={(e) => handleRequirementChange(index, "subject", e.target.value)}
-                    className="flex-1 rounded-md border border-gray-300 px-2 py-1"
-                  >
-                    {SUBJECTS.map((subject) => (
-                      <option key={subject} value={subject}>
-                        {subject}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="text-gray-500">at least</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={req.min_percent}
-                    onChange={(e) => handleRequirementChange(index, "min_percent", e.target.value)}
-                    className="w-20 rounded-md border border-gray-300 px-2 py-1"
-                  />
-                  <span className="text-gray-500">%</span>
-                  <button type="button" onClick={() => removeRequirement(index)} className="text-red-600 hover:underline">
-                    Remove
+
+            {form.requirement_groups.map((group, groupIndex) => (
+              <div key={groupIndex} className="rounded-md border border-gray-200 bg-gray-50 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-sm font-medium">Requirement {groupIndex + 1}</p>
+                  <button type="button" onClick={() => removeGroup(groupIndex)} className="text-sm text-red-600 hover:underline">
+                    Remove requirement
                   </button>
                 </div>
-              ))}
-            </div>
-            <button type="button" onClick={addRequirement} className="mt-2 text-sm text-blue-600 hover:underline">
-              + Add subject
+
+                <div className="space-y-2">
+                  {group.options.map((option, optionIndex) => (
+                    <div key={optionIndex}>
+                      {optionIndex > 0 && <p className="mb-2 text-xs font-semibold uppercase text-gray-400">or</p>}
+                      <div className="flex flex-wrap items-center gap-2 text-sm">
+                        <select
+                          value={option.subject}
+                          onChange={(e) => handleOptionChange(groupIndex, optionIndex, "subject", e.target.value)}
+                          className="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1"
+                        >
+                          {SUBJECTS.map((subject) => (
+                            <option key={subject} value={subject}>
+                              {subject}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="text-gray-500">at least</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={option.min_percent}
+                          onChange={(e) => handleOptionChange(groupIndex, optionIndex, "min_percent", e.target.value)}
+                          className="w-20 rounded-md border border-gray-300 px-2 py-1"
+                        />
+                        <span className="text-gray-500">%</span>
+                        {group.options.length > 1 && (
+                          <button type="button" onClick={() => removeOption(groupIndex, optionIndex)} className="text-red-600 hover:underline">
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button type="button" onClick={() => addOption(groupIndex)} className="mt-2 text-sm text-blue-600 hover:underline">
+                  + Add alternative subject
+                </button>
+              </div>
+            ))}
+
+            <button type="button" onClick={addGroup} className="text-sm text-blue-600 hover:underline">
+              + Add requirement
             </button>
           </fieldset>
 
@@ -268,7 +325,7 @@ export default function CoursesPage() {
                 ))}
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                Min APS: {course.min_aps} · {(course.requirements ?? []).length} subject requirements
+                Min APS: {course.min_aps} · {(course.requirement_groups ?? []).length} subject requirements
               </p>
             </div>
             <div className="flex gap-2">
