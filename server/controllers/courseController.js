@@ -56,6 +56,7 @@ const courseFields = [
   "duration",
   "additional_requirements",
   "application_url",
+  "application_deadline",
   "source_url",
   "admission_year",
 ];
@@ -63,17 +64,17 @@ const courseFields = [
 function prepareCourse(body = {}) {
   return Object.fromEntries(
     courseFields
-      .filter((field) =>
-        Object.prototype.hasOwnProperty.call(body, field)
-      )
-      .map((field) => [field, body[field]])
+      .filter((field) => Object.prototype.hasOwnProperty.call(body, field))
+      .map((field) => [field, body[field]]),
   );
 }
 
 function validCourse(course) {
   return (
     typeof course.institution_id === "string" &&
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(course.institution_id) &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      course.institution_id,
+    ) &&
     typeof course.name === "string" &&
     course.name.trim().length > 0 &&
     (course.fields === undefined ||
@@ -125,7 +126,7 @@ export const updateCourse = async (req, res) => {
   try {
     const course = prepareCourse(req.body ?? {});
 
-    if (!validCourse(course)) {
+    if (!validCourseUpdate(course)) {
       return res.status(400).json({
         message: "Invalid course data",
       });
@@ -160,6 +161,82 @@ export const updateCourse = async (req, res) => {
     });
   }
 };
+
+function validCourseUpdate(course) {
+  if (Object.keys(course).length === 0) {
+    return false;
+  }
+
+  const has = (field) => Object.prototype.hasOwnProperty.call(course, field);
+
+  if (has("institution_id")) {
+    if (
+      typeof course.institution_id !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        course.institution_id,
+      )
+    ) {
+      return false;
+    }
+  }
+
+  if (has("name")) {
+    if (typeof course.name !== "string" || course.name.trim().length === 0) {
+      return false;
+    }
+  }
+
+  if (has("fields")) {
+    if (
+      !Array.isArray(course.fields) ||
+      !course.fields.every((field) => typeof field === "string")
+    ) {
+      return false;
+    }
+  }
+
+  if (has("min_aps")) {
+    if (
+      course.min_aps !== null &&
+      (!Number.isInteger(course.min_aps) ||
+        course.min_aps < 0 ||
+        course.min_aps > 100)
+    ) {
+      return false;
+    }
+  }
+
+  if (has("application_deadline")) {
+    const date = course.application_deadline;
+
+    if (
+      date !== null &&
+      (typeof date !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+        Number.isNaN(Date.parse(`${date}T00:00:00Z`)))
+    ) {
+      return false;
+    }
+  }
+
+  if (has("application_url")) {
+    const url = course.application_url;
+
+    if (url !== null) {
+      try {
+        const parsed = new URL(url);
+
+        if (!["https:", "http:"].includes(parsed.protocol)) {
+          return false;
+        }
+      } catch {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
 
 // DELETE /api/courses/:id
 export const deleteCourse = async (req, res) => {
