@@ -6,7 +6,7 @@ PathPlug is a full-stack course and career guidance platform designed to help So
 
 > **MVP scope (November 2026):** PathPlug currently contains **12 programmes across two universities**: the **University of the Witwatersrand (Wits)** and the **University of KwaZulu-Natal (UKZN)**. Results are preliminary guidance, **not an admission decision or guarantee of acceptance**.
 
-Live Link: 
+Live Link: https://career-guidance-platform-livid.vercel.app/
 
 ## Table of contents
 
