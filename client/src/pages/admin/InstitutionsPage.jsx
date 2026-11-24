@@ -33,7 +33,7 @@ const loLabels = {
 };
 
 export default function InstitutionsPage() {
-    const { token } = useAuth();
+  const { token } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -54,7 +54,7 @@ export default function InstitutionsPage() {
     setEditingId("new");
   }
 
-    function openEdit(institution) {
+  function openEdit(institution) {
     // fill in blanks so the form still works if a field is empty in the database
     setForm({
       ...structuredClone(emptyForm),
@@ -83,7 +83,7 @@ export default function InstitutionsPage() {
 
   function handleScaleChange(index, key, value) {
     const scale = form.aps_rules.scale.map((row, i) =>
-      i === index ? { ...row, [key]: Number(value) } : row
+      i === index ? { ...row, [key]: Number(value) } : row,
     );
     setForm({ ...form, aps_rules: { ...form.aps_rules, scale } });
   }
@@ -98,7 +98,7 @@ export default function InstitutionsPage() {
     setForm({ ...form, aps_rules: { ...form.aps_rules, scale } });
   }
 
-    async function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     // keep the scale ordered from highest to lowest percentage
     const scale = [...form.aps_rules.scale].sort((a, b) => b.min - a.min);
@@ -114,10 +114,18 @@ export default function InstitutionsPage() {
     setError("");
     try {
       if (editingId === "new") {
-        const created = await apiRequest("/api/institutions", { method: "POST", body, token });
+        const created = await apiRequest("/api/institutions", {
+          method: "POST",
+          body,
+          token,
+        });
         setItems([...items, created]);
       } else {
-        const updated = await apiRequest(`/api/institutions/${editingId}`, { method: "PUT", body, token });
+        const updated = await apiRequest(`/api/institutions/${editingId}`, {
+          method: "PUT",
+          body,
+          token,
+        });
         setItems(items.map((i) => (i.id === editingId ? updated : i)));
       }
       closeForm();
@@ -132,16 +140,24 @@ export default function InstitutionsPage() {
     if (!window.confirm(`Delete ${institution.name}?`)) return;
     setError("");
     try {
-      await apiRequest(`/api/institutions/${institution.id}`, { method: "DELETE", token });
+      await apiRequest(`/api/institutions/${institution.id}`, {
+        method: "DELETE",
+        token,
+      });
       setItems(items.filter((i) => i.id !== institution.id));
     } catch (err) {
       setError(err.message);
     }
   }
 
-  const inputClass = "mt-1 w-full rounded-md border border-[#D9DFE8] px-3 py-2 text-sm";
-  const buttonPrimary = "rounded-md bg-[#14213D] px-4 py-2 text-sm text-white hover:bg-[#1f3159]";
-  const buttonAccent = "rounded-md bg-[#FFC72C] px-4 py-2 text-sm font-semibold text-[#14213D] hover:brightness-95";
+  const inputClass =
+    "mt-1 w-full rounded-md border border-[#D9DFE8] px-3 py-2 text-sm";
+  const buttonPrimary =
+    "rounded-md bg-[#14213D] px-4 py-2 text-sm text-white hover:bg-[#1f3159]";
+  const buttonAccent =
+    "rounded-md bg-[#FFC72C] px-4 py-2 text-sm font-semibold text-[#14213D] hover:brightness-95";
+  const buttonSecondary =
+    "rounded-md border border-[#D9DFE8] px-4 py-2 text-sm hover:bg-gray-100";
 
   return (
     <div>
@@ -155,15 +171,22 @@ export default function InstitutionsPage() {
       </div>
 
       {error && (
-        <p role="alert" className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p
+          role="alert"
+          className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
           {error}
         </p>
       )}
-      {loading && <p className="text-sm text-gray-500">Loading institutions...</p>}
-    
-      
+      {loading && (
+        <p className="text-sm text-gray-500">Loading institutions...</p>
+      )}
+
       {editingId && (
-        <form onSubmit={handleSubmit} className="mb-6 space-y-6 rounded-lg border border-[#D9DFE8] bg-white p-5 shadow-sm">
+        <form
+          onSubmit={handleSubmit}
+          className="mb-6 space-y-6 rounded-lg border border-[#D9DFE8] bg-white p-5 shadow-sm"
+        >
           <h2 className="text-lg font-semibold">
             {editingId === "new" ? "Add institution" : "Edit institution"}
           </h2>
@@ -171,22 +194,44 @@ export default function InstitutionsPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm">
               Name
-              <input name="name" value={form.name} onChange={handleChange} required className={inputClass} />
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+                className={inputClass}
+              />
             </label>
             <label className="block text-sm">
               Type
-              <select name="type" value={form.type} onChange={handleChange} className={inputClass}>
+              <select
+                name="type"
+                value={form.type}
+                onChange={handleChange}
+                className={inputClass}
+              >
                 <option value="university">University</option>
                 <option value="tvet">TVET college</option>
               </select>
             </label>
             <label className="block text-sm">
               Location
-              <input name="location" value={form.location} onChange={handleChange} className={inputClass} />
+              <input
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                className={inputClass}
+              />
             </label>
             <label className="block text-sm">
               Website
-              <input name="website" type="url" value={form.website} onChange={handleChange} className={inputClass} />
+              <input
+                name="website"
+                type="url"
+                value={form.website}
+                onChange={handleChange}
+                className={inputClass}
+              />
             </label>
           </div>
 
@@ -226,14 +271,19 @@ export default function InstitutionsPage() {
               <p className="mb-2 text-sm">Points scale</p>
               <div className="space-y-2">
                 {form.aps_rules.scale.map((row, index) => (
-                  <div key={index} className="flex flex-wrap items-center gap-2 text-sm">
-                   <span className="text-gray-500">From</span>
+                  <div
+                    key={index}
+                    className="flex flex-wrap items-center gap-2 text-sm"
+                  >
+                    <span className="text-gray-500">From</span>
                     <input
                       type="number"
                       min="0"
                       max="100"
                       value={row.min}
-                      onChange={(e) => handleScaleChange(index, "min", e.target.value)}
+                      onChange={(e) =>
+                        handleScaleChange(index, "min", e.target.value)
+                      }
                       className="w-20 rounded-md border border-[#D9DFE8] px-2 py-1"
                     />
                     <span className="text-gray-500">% =</span>
@@ -242,7 +292,9 @@ export default function InstitutionsPage() {
                       min="0"
                       max="10"
                       value={row.points}
-                      onChange={(e) => handleScaleChange(index, "points", e.target.value)}
+                      onChange={(e) =>
+                        handleScaleChange(index, "points", e.target.value)
+                      }
                       className="w-16 rounded-md border border-[#D9DFE8] px-2 py-1"
                     />
                     <span className="text-gray-500">points</span>
@@ -256,7 +308,11 @@ export default function InstitutionsPage() {
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={addScaleRow} className="mt-2 text-sm text-[#14213D] hover:underline">
+              <button
+                type="button"
+                onClick={addScaleRow}
+                className="mt-2 text-sm text-[#14213D] hover:underline"
+              >
                 + Add row
               </button>
             </div>
@@ -278,7 +334,11 @@ export default function InstitutionsPage() {
             <button type="submit" disabled={saving} className={buttonPrimary}>
               {saving ? "Saving..." : "Save"}
             </button>
-            <button type="button" onClick={closeForm} className={buttonSecondary}>
+            <button
+              type="button"
+              onClick={closeForm}
+              className={buttonSecondary}
+            >
               Cancel
             </button>
           </div>
@@ -294,18 +354,27 @@ export default function InstitutionsPage() {
             <div>
               <p className="font-semibold">{institution.name}</p>
               <p className="text-sm text-gray-500">
-                {institution.type === "tvet" ? "TVET college" : "University"} · {institution.location}
+                {institution.type === "tvet" ? "TVET college" : "University"} ·{" "}
+                {institution.location}
               </p>
               <p className="mt-1 text-xs text-gray-500">
-                APS: best {institution.aps_rules?.subjects_counted ?? "?"} subjects ·{" "}
-                {loLabels[institution.aps_rules?.life_orientation] ?? "Life Orientation not set"}
+                APS: best {institution.aps_rules?.subjects_counted ?? "?"}{" "}
+                subjects ·{" "}
+                {loLabels[institution.aps_rules?.life_orientation] ??
+                  "Life Orientation not set"}
               </p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => openEdit(institution)} className="rounded-md border border-[#D9DFE8] px-3 py-1.5 text-sm hover:bg-gray-100">
+              <button
+                onClick={() => openEdit(institution)}
+                className="rounded-md border border-[#D9DFE8] px-3 py-1.5 text-sm hover:bg-gray-100"
+              >
                 Edit
               </button>
-              <button onClick={() => handleDelete(institution)} className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
+              <button
+                onClick={() => handleDelete(institution)}
+                className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+              >
                 Delete
               </button>
             </div>
