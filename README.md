@@ -6,6 +6,8 @@ PathPlug is a full-stack course and career guidance platform designed to help So
 
 > **MVP scope (November 2026):** PathPlug currently contains **12 programmes across two universities**: the **University of the Witwatersrand (Wits)** and the **University of KwaZulu-Natal (UKZN)**. Results are preliminary guidance, **not an admission decision or guarantee of acceptance**.
 
+Live Link: 
+
 ## Table of contents
 
 - [The problem](#the-problem)
@@ -364,9 +366,9 @@ The list above is a **verification checklist**, not a claim that every item has 
 
 PathPlug was developed as a collaborative full-stack software development project by:
 
-- **Andre** — Backend/frontend integration, learner marks experience, reusable matching hook, and shared project development; project documentation.
+- **Andre** — Admin side (dashboard, institutions and courses management, APS rules, AND/OR subject requirements, career links) and connecting it to the API; real login/signup and session checks; learner marks form, saved marks, matching hook, dashboard and first version of the results page; integration fixes and merging the team's branches.
 - **Yolanda** — Frontend development and interface design contributions; project documentation.
-- **Lusizo Sibiya** — Backend matching and database-related development/testing; enhanced learner Results page with admission feedback, career information, verified salary ranges, and application details; admin course application-field enhancements and UI fixes; project documentation.
+- **Lusizo Sibiya** — Backend matching and database-related development/testing; enhanced learner Results page with admission feedback, career information, demo salary ranges, and application details; admin course application-field enhancements and UI fixes; project documentation.
 
 All team members contributed through Git/GitHub collaboration and shared project testing. Individual contributions can be further clarified against the merged pull-request history.
 
